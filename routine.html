@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Routine Editor - Edit & Update</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: #eef1f5;
+            padding: 20px;
+            margin: 0;
+            color: #333;
+        }
+        .container {
+            background: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 1400px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        h1 {
+            margin: 0 0 16px 0;
+            font-size: 1.6rem;
+            color: #2c3e50;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        label {
+            font-weight: 600;
+            color: #34495e;
+        }
+        select, input[type="text"], input[type="number"] {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #cfd6df;
+            background: #fff;
+            font-size: 0.95rem;
+        }
+        button {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        #refreshBtn {
+            background: #2980b9;
+            color: #fff;
+        }
+        #updateBtn {
+            background: #27ae60;
+            color: #fff;
+        }
+        #resetBtn {
+            background: #e74c3c;
+            color: #fff;
+        }
+        #exportBtn {
+            background: #f39c12;
+            color: #fff;
+        }
+        #printBtn {
+            background: #9b59b6;
+            color: #fff;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0 14px 0;
+        }
+        .tab {
+            padding: 8px 12px;
+            border-radius: 999px;
+            border: 1px solid #cfd6df;
+            background: #f7f9fb;
+            cursor: pointer;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        .tab.active {
+            background: #2c3e50;
+            color: #fff;
+            border-color: #2c3e50;
+        }
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+            font-weight: 500;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .checkbox-wrapper label {
+            cursor: pointer;
+            margin: 0;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            margin-bottom: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #cfd6df;
+            padding: 8px;
+            text-align: center;
+            vertical-align: top;
+            font-size: 0.85rem;
+        }
+        th {
+            background: #4caf50;
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        td.period {
+            background: #f7f9fb;
+            font-weight: 800;
+            width: 90px;
+            text-align: left;
+        }
+        .cell-teacher {
+            font-weight: 800;
+            color: #2c3e50;
+        }
+        .cell-subject {
+            color: #34495e;
+        }
+        .cell-book {
+            color: #7f8c8d;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .cell-class {
+            color: #8e44ad;
+            font-weight: 800;
+        }
+        .cell-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        select.edit-field, input.edit-field {
+            width: 100%;
+            padding: 4px 6px;
+            border: 1px solid #999;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .changes-indicator {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            margin-left: 8px;
+        }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .container {
+                box-shadow: none;
+                padding: 20px;
+                max-width: 100%;
+                margin: 0;
+            }
+            .controls, .tabs, .checkbox-wrapper, .action-buttons, #message, #changesInfo, .cell-teacher, .cell-subject, .cell-book, select.edit-field, input.edit-field {
+                display: none !important;
+            }
+            .print-header {
+                text-align: center;
+                font-size: 1.4rem;
+                font-weight: bold;
+                margin-bottom: 20px;
+                color: #2c3e50;
+                border-bottom: 2px solid #4caf50;
+                padding-bottom: 10px;
+            }
+            table {
+                margin-top: 0;
+            }
+            th {
+                background: #4caf50 !important;
+                color: white !important;
+                position: static;
+            }
+            td {
+                border: 1px solid #999;
+            }
+            td.period {
+                background: #f0f0f0 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Routine Editor - Edit & Update</h1>
+        
+        <div class="controls">
+            <label for="sessionSelect">Academic Session</label>
+            <select id="sessionSelect"></select>
+            
+            <span style="flex: 1 1 auto"></span>
+            
+            <button id="refreshBtn">Refresh Data</button>
+            <button id="exportBtn">Export Excel</button>
+            <button id="printBtn">Print</button>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" id="classTab">Class-wise (Edit)</button>
+            <button class="tab" id="teacherTab">Teacher-wise (Edit)</button>
+        </div>
+        
+        <div class="controls" id="classControls">
+            <label for="classSelect">Class</label>
+            <select id="classSelect"></select>
+        </div>
+        
+        <div class="controls" id="teacherControls" style="display: none">
+            <label for="teacherSelect">Teacher</label>
+            <select id="teacherSelect"></select>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin: 10px 0;">
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="editTeacherCheck">
+                <label for="editTeacherCheck">Edit Teachers</label>
+            </div>
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="editSubjectCheck">
+                <label for="editSubjectCheck">Edit Subjects</label>
+            </div>
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="editBookCheck">
+                <label for="editBookCheck">Edit Book Names</label>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="updateBtn">Save All Changes</button>
+            <button id="resetBtn">Reset Changes</button>
+        </div>
+        
+        <div id="message" class="message"></div>
+        <div id="changesInfo" style="margin: 10px 0; padding: 10px; background: #f0f0f0; border-radius: 6px; display: none;">
+            <strong>Pending Changes:</strong> <span id="changeCount">0</span> fields
+        </div>
+        
+        <div id="tableContainer"></div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="../js/config.js"></script>
+    
+    <script>
+        const API_BASE_URL = CONFIG.API_URL;
+        const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+        const PERIOD_ORDER = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th"];
+        const SUBJECTS = ["Math", "English", "Science", "Bengali/Hindi", "SST", "GK", "Computer", "EVS", "Moral Value", "3rd Lang. Hindi", "Communication", "Yoga", "Rhymes", "Drawing", "Music/Dance"];
+        
+        const sessionSelect = document.getElementById("sessionSelect");
+        const classSelect = document.getElementById("classSelect");
+        const teacherSelect = document.getElementById("teacherSelect");
+        const tableContainer = document.getElementById("tableContainer");
+        const message = document.getElementById("message");
+        const changesInfo = document.getElementById("changesInfo");
+        const changeCount = document.getElementById("changeCount");
+        
+        const classTab = document.getElementById("classTab");
+        const teacherTab = document.getElementById("teacherTab");
+        const classControls = document.getElementById("classControls");
+        const teacherControls = document.getElementById("teacherControls");
+        
+        const editTeacherCheck = document.getElementById("editTeacherCheck");
+        const editSubjectCheck = document.getElementById("editSubjectCheck");
+        const editBookCheck = document.getElementById("editBookCheck");
+        
+        const updateBtn = document.getElementById("updateBtn");
+        const resetBtn = document.getElementById("resetBtn");
+        
+        let academicSession = "Default";
+        let activeView = "class";
+        let weeklyDataByDay = {};
+        let originalDataByDay = {}; // Store original values for comparison
+        let changedPeriods = {}; // Track ONLY changed fields: { key: { field: newValue, ... } }
+        let classes = [];
+        let teachers = [];
+        
+        function showMessage(text, type) {
+            message.textContent = text;
+            message.className = "message " + type;
+            setTimeout(() => { message.className = "message"; }, 4000);
+        }
+        
+        function updateChangesIndicator() {
+            const totalChanges = Object.keys(changedPeriods).reduce((sum, key) => {
+                return sum + Object.keys(changedPeriods[key]).length;
+            }, 0);
+            
+            if (totalChanges > 0) {
+                changesInfo.style.display = "block";
+                changeCount.textContent = totalChanges;
+            } else {
+                changesInfo.style.display = "none";
+            }
+        }
+        
+        async function loadSessions() {
+            try {
+                const res = await fetch(API_BASE_URL + "/sessions");
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                const data = await res.json();
+                const sessions = (data.sessions || []).map(s => s.name);
+                
+                sessionSelect.innerHTML = "";
+                if (sessions.length > 0) {
+                    sessions.forEach(s => {
+                        const opt = document.createElement("option");
+                        opt.value = s;
+                        opt.textContent = s;
+                        sessionSelect.appendChild(opt);
+                    });
+                    academicSession = sessions[0];
+                    sessionSelect.value = academicSession;
+                } else {
+                    const opt = document.createElement("option");
+                    opt.value = "Default";
+                    opt.textContent = "Default";
+                    sessionSelect.appendChild(opt);
+                    academicSession = "Default";
+                }
+                console.log("Sessions loaded:", sessions);
+            } catch (err) {
+                console.error("Error loading sessions:", err);
+                showMessage("Error loading sessions", "error");
+            }
+        }
+        
+        async function loadClassesForSession() {
+            try {
+                const url = API_BASE_URL + "/routine-classes?session=" + encodeURIComponent(academicSession);
+                const res = await fetch(url);
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                const data = await res.json();
+                
+                classes = (data.classes || []).map(c => c.className);
+                
+                classSelect.innerHTML = "";
+                if (classes.length > 0) {
+                    classes.forEach(c => {
+                        const opt = document.createElement("option");
+                        opt.value = c;
+                        opt.textContent = c;
+                        classSelect.appendChild(opt);
+                    });
+                    classSelect.value = classes[0];
+                }
+                console.log("Classes loaded:", classes);
+            } catch (err) {
+                console.error("Error loading classes:", err);
+                showMessage("Error loading classes", "error");
+            }
+        }
+        
+        async function loadTeachers() {
+            try {
+                const res = await fetch(API_BASE_URL + "/teachers");
+                if (!res.ok) throw new Error("HTTP " + res.status);
+                const data = await res.json();
+                
+                teachers = (data.teachers || []).map(t => t.name).filter(Boolean);
+                
+                teacherSelect.innerHTML = "";
+                if (teachers.length > 0) {
+                    teachers.forEach(t => {
+                        const opt = document.createElement("option");
+                        opt.value = t;
+                        opt.textContent = t;
+                        teacherSelect.appendChild(opt);
+                    });
+                    teacherSelect.value = teachers[0];
+                }
+                console.log("Teachers loaded:", teachers);
+            } catch (err) {
+                console.error("Error loading teachers:", err);
+                showMessage("Error loading teachers", "error");
+            }
+        }
+        
+        async function fetchRoutinesForDay(day) {
+            try {
+                const url = API_BASE_URL + "/routines/get-routine?day=" + encodeURIComponent(day) + "&session=" + encodeURIComponent(academicSession);
+                const res = await fetch(url);
+                if (!res.ok) return [];
+                const data = await res.json();
+                
+                if (Array.isArray(data)) return data;
+                if (Array.isArray(data.routines)) return data.routines;
+                if (data.routine) return Array.isArray(data.routine) ? data.routine : [data.routine];
+                
+                return [];
+            } catch (err) {
+                console.error("Error fetching routines for " + day, err);
+                return [];
+            }
+        }
+        
+        async function refreshWeeklyData() {
+            weeklyDataByDay = {};
+            originalDataByDay = {};
+            changedPeriods = {};
+            
+            for (let i = 0; i < DAYS.length; i++) {
+                const day = DAYS[i];
+                const routines = await fetchRoutinesForDay(day);
+                weeklyDataByDay[day] = JSON.parse(JSON.stringify(routines)); // Deep copy
+                originalDataByDay[day] = JSON.parse(JSON.stringify(routines)); // Keep original
+            }
+            
+            renderCurrentView();
+            updateChangesIndicator();
+            showMessage("Data loaded!", "success");
+        }
+        
+        function buildClassTable(className) {
+            if (!className) return "<p>Select a class</p>";
+            
+            const map = {};
+            DAYS.forEach(d => map[d] = {});
+            
+            DAYS.forEach(day => {
+                (weeklyDataByDay[day] || []).forEach(r => {
+                    if ((r.class || r.className) !== className) return;
+                    
+                    (r.periods || []).forEach(p => {
+                        if (!p || p.period === "Break") return;
+                        
+                        const label = (p.period || "").trim();
+                        const key = day + "-" + className + "-" + label;
+                        
+                        map[day][label] = {
+                            teacher: p.teacher || "",
+                            subject: p.subject || "",
+                            book: p.book || ""
+                        };
+                    });
+                });
+            });
+            
+            let html = "<table><thead><tr><th>Day</th>";
+            PERIOD_ORDER.forEach(p => html += "<th>" + p + "</th>");
+            html += "</tr></thead><tbody>";
+            
+            DAYS.forEach(day => {
+                html += "<tr><td class='period'>" + day + "</td>";
+                
+                PERIOD_ORDER.forEach(period => {
+                    const e = map[day][period];
+                    const key = day + "-" + className + "-" + period;
+                    const isChanged = changedPeriods[key] ? Object.keys(changedPeriods[key]).length > 0 : false;
+                    
+                    if (!e) {
+                        html += "<td><div style='color:#bbb'>Free</div></td>";
+                    } else {
+                        const cellStyle = isChanged ? "style='background-color: #fffacd; border: 2px solid #ffc107;'" : "";
+                        html += "<td " + cellStyle + "><div class='cell-content'>";
+                        
+                        if (editTeacherCheck.checked) {
+                            html += "<select class='edit-field' data-key='" + key + "' data-field='teacher'>";
+                            html += "<option value=''>--Select--</option>";
+                            teachers.forEach(t => {
+                                const sel = t === e.teacher ? " selected" : "";
+                                html += "<option value='" + t + "'" + sel + ">" + t + "</option>";
+                            });
+                            html += "</select>";
+                        } else {
+                            html += "<div class='cell-teacher'>" + e.teacher + "</div>";
+                        }
+                        
+                        if (editSubjectCheck.checked) {
+                            html += "<select class='edit-field' data-key='" + key + "' data-field='subject'>";
+                            html += "<option value=''>--Select--</option>";
+                            SUBJECTS.forEach(s => {
+                                const sel = s === e.subject ? " selected" : "";
+                                html += "<option value='" + s + "'" + sel + ">" + s + "</option>";
+                            });
+                            html += "</select>";
+                        } else {
+                            html += "<div class='cell-subject'>" + e.subject + "</div>";
+                        }
+                        
+                        if (editBookCheck.checked) {
+                            html += "<input type='text' class='edit-field' data-key='" + key + "' data-field='book' value='" + (e.book || "") + "' placeholder=''>";
+                        } else {
+                            html += "<div class='cell-book'>" + e.book + "</div>";
+                        }
+                        
+                        html += "</div></td>";
+                    }
+                });
+                
+                html += "</tr>";
+            });
+            
+            html += "</tbody></table>";
+            return html;
+        }
+        
+        function buildTeacherTable(teacher) {
+            if (!teacher) return "<p>Select a teacher</p>";
+            
+            const map = {};
+            DAYS.forEach(d => map[d] = {});
+            
+            DAYS.forEach(day => {
+                (weeklyDataByDay[day] || []).forEach(r => {
+                    const cls = r.class || r.className;
+                    
+                    (r.periods || []).forEach(p => {
+                        if (!p || p.period === "Break") return;
+                        if (p.teacher !== teacher) return;
+                        
+                        const label = (p.period || "").trim();
+                        const key = day + "-" + teacher + "-" + label + "-" + cls;
+                        
+                        map[day][label] = {
+                            class: cls,
+                            subject: p.subject || "",
+                            book: p.book || ""
+                        };
+                    });
+                });
+            });
+            
+            let html = "<table><thead><tr><th>Day</th>";
+            PERIOD_ORDER.forEach(p => html += "<th>" + p + "</th>");
+            html += "</tr></thead><tbody>";
+            
+            DAYS.forEach(day => {
+                html += "<tr><td class='period'>" + day + "</td>";
+                
+                PERIOD_ORDER.forEach(period => {
+                    const e = map[day][period];
+                    
+                    if (!e) {
+                        html += "<td><div style='color:#bbb'>Free</div></td>";
+                    } else {
+                        const key = day + "-" + teacher + "-" + period + "-" + e.class;
+                        const isChanged = changedPeriods[key] ? Object.keys(changedPeriods[key]).length > 0 : false;
+                        const cellStyle = isChanged ? "style='background-color: #fffacd; border: 2px solid #ffc107;'" : "";
+                        html += "<td " + cellStyle + "><div class='cell-content'>";
+                        
+                        html += "<div class='cell-class'>" + e.class + "</div>";
+                        
+                        if (editSubjectCheck.checked) {
+                            html += "<select class='edit-field' data-key='" + key + "' data-field='subject'>";
+                            html += "<option value=''>--Select--</option>";
+                            SUBJECTS.forEach(s => {
+                                const sel = s === e.subject ? " selected" : "";
+                                html += "<option value='" + s + "'" + sel + ">" + s + "</option>";
+                            });
+                            html += "</select>";
+                        } else {
+                            html += "<div class='cell-subject'>" + e.subject + "</div>";
+                        }
+                        
+                        if (editBookCheck.checked) {
+                            html += "<input type='text' class='edit-field' data-key='" + key + "' data-field='book' value='" + (e.book || "") + "' placeholder='Book name'>";
+                        } else {
+                            html += "<div class='cell-book'>" + e.book + "</div>";
+                        }
+                        
+                        html += "</div></td>";
+                    }
+                });
+                
+                html += "</tr>";
+            });
+            
+            html += "</tbody></table>";
+            return html;
+        }
+        
+        function renderCurrentView() {
+            let html;
+            if (activeView === "class") {
+                html = buildClassTable(classSelect.value);
+            } else {
+                html = buildTeacherTable(teacherSelect.value);
+            }
+            
+            tableContainer.innerHTML = html;
+            
+            tableContainer.querySelectorAll(".edit-field").forEach(el => {
+                el.addEventListener("change", function() {
+                    const key = this.dataset.key;
+                    const field = this.dataset.field;
+                    const newValue = this.value;
+                    
+                    // Initialize change tracking for this key if needed
+                    if (!changedPeriods[key]) {
+                        changedPeriods[key] = {};
+                    }
+                    
+                    // Only track if value actually changed from original
+                    // Find original value
+                    const parts = key.split("-");
+                    const day = parts[0];
+                    let originalValue = "";
+                    
+                    if (activeView === "class") {
+                        const className = parts[1];
+                        const period = parts[2];
+                        const originalRoutine = (originalDataByDay[day] || []).find(r => (r.class || r.className) === className);
+                        if (originalRoutine) {
+                            const originalPeriod = (originalRoutine.periods || []).find(p => (p.period || "").trim() === period);
+                            if (originalPeriod) {
+                                originalValue = originalPeriod[field] || "";
+                            }
+                        }
+                    } else {
+                        const teacher = parts[1];
+                        const period = parts[2];
+                        const className = parts[3];
+                        const originalRoutine = (originalDataByDay[day] || []).find(r => (r.class || r.className) === className);
+                        if (originalRoutine) {
+                            const originalPeriod = (originalRoutine.periods || []).find(p => p.teacher === teacher && (p.period || "").trim() === period);
+                            if (originalPeriod) {
+                                originalValue = originalPeriod[field] || "";
+                            }
+                        }
+                    }
+                    
+                    // Only save if changed from original
+                    if (newValue !== originalValue) {
+                        changedPeriods[key][field] = newValue;
+                    } else {
+                        // Remove this field from changes if it's back to original
+                        delete changedPeriods[key][field];
+                        if (Object.keys(changedPeriods[key]).length === 0) {
+                            delete changedPeriods[key];
+                        }
+                    }
+                    
+                    console.log("Field changed:", key, "->", field, "=", newValue, "(original:", originalValue + ")");
+                    updateChangesIndicator();
+                    renderCurrentView();
+                });
+            });
+        }
+        
+        async function updateChanges() {
+            const changedKeys = Object.keys(changedPeriods);
+            
+            if (changedKeys.length === 0) {
+                showMessage("No changes to save", "error");
+                return;
+            }
+            
+            try {
+                updateBtn.disabled = true;
+                updateBtn.textContent = "Saving...";
+                
+                const updates = [];
+                
+                // Build targeted update payloads - only changed fields
+                for (const key of changedKeys) {
+                    const parts = key.split("-");
+                    const day = parts[0];
+                    let className, period;
+                    
+                    if (activeView === "class") {
+                        className = parts[1];
+                        period = parts[2];
+                    } else {
+                        const teacher = parts[1];
+                        period = parts[2];
+                        className = parts[3];
+                    }
+                    
+                    // Find the original routine for this day and class
+                    const routineForDay = weeklyDataByDay[day] || [];
+                    const classRoutine = routineForDay.find(r => (r.class || r.className) === className);
+                    
+                    if (classRoutine) {
+                        const periodIndex = (classRoutine.periods || []).findIndex(p => (p.period || "").trim() === period);
+                        if (periodIndex !== -1) {
+                            const changes = changedPeriods[key];
+                            
+                            // Apply only changed fields to the period
+                            Object.keys(changes).forEach(field => {
+                                classRoutine.periods[periodIndex][field] = changes[field];
+                            });
+                        }
+                    }
+                }
+                
+                // Send targeted save request for each day-class combination that has changes
+                const sendPromises = [];
+                for (const day of DAYS) {
+                    (weeklyDataByDay[day] || []).forEach(routine => {
+                        sendPromises.push(
+                            fetch(API_BASE_URL + "/routine/save-routine", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    class: routine.class || routine.className,
+                                    day: day,
+                                    periods: routine.periods,
+                                    session: academicSession
+                                })
+                            })
+                        );
+                    });
+                }
+                
+                const results = await Promise.all(sendPromises);
+                const allOk = results.every(r => r.ok);
+                
+                if (!allOk) {
+                    throw new Error("Some updates failed");
+                }
+                
+                showMessage("✓ All changes saved to database! (Only modified fields were updated)", "success");
+                changedPeriods = {};
+                updateChangesIndicator();
+                await refreshWeeklyData();
+            } catch (err) {
+                console.error("Error updating routine:", err);
+                showMessage("Error: " + err.message, "error");
+            } finally {
+                updateBtn.disabled = false;
+                updateBtn.textContent = "Save All Changes";
+            }
+        }
+        
+        function resetChanges() {
+            changedPeriods = {};
+            renderCurrentView();
+            updateChangesIndicator();
+            showMessage("Changes discarded", "success");
+        }
+        
+        function exportCurrentView() {
+            const table = tableContainer.querySelector("table");
+            
+            if (!table) {
+                showMessage("No table to export", "error");
+                return;
+            }
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(table);
+            
+            XLSX.utils.book_append_sheet(wb, ws, "Routine");
+            XLSX.writeFile(wb, "Routine-Editor-" + academicSession + ".xlsx");
+        }
+        
+        function printCurrentView() {
+            let printContent = "<div class='print-header'>";
+            
+            if (activeView === "class") {
+                printContent += "Class: " + classSelect.value;
+            } else {
+                printContent += "Teacher: " + teacherSelect.value;
+            }
+            
+            printContent += "</div>";
+            printContent += tableContainer.innerHTML;
+            
+            const printWindow = window.open("", "Print", "height=800,width=1200");
+            printWindow.document.write("<!DOCTYPE html><html><head><meta charset='UTF-8'>");
+            printWindow.document.write("<style>");
+            printWindow.document.write("@media print { body { font-family: Arial, sans-serif; margin: 20px; } }");
+            printWindow.document.write("body { font-family: Arial, sans-serif; margin: 20px; }");
+            printWindow.document.write(".print-header { text-align: center; font-size: 1.4rem; font-weight: bold; margin-bottom: 20px; color: #2c3e50; border-bottom: 2px solid #4caf50; padding-bottom: 10px; }");
+            printWindow.document.write("table { width: 100%; border-collapse: collapse; margin-top: 0; }");
+            printWindow.document.write("th, td { border: 1px solid #999; padding: 8px; text-align: center; font-size: 0.85rem; }");
+            printWindow.document.write("th { background: #4caf50; color: white; font-weight: bold; }");
+            printWindow.document.write("td.period { background: #f0f0f0; font-weight: bold; text-align: left; width: 90px; }");
+            printWindow.document.write(".cell-content { display: flex; flex-direction: column; gap: 4px; }");
+            printWindow.document.write("</style>");
+            printWindow.document.write("</head><body>");
+            printWindow.document.write(printContent);
+            printWindow.document.write("</body></html>");
+            printWindow.document.close();
+            
+            setTimeout(() => {
+                printWindow.print();
+            }, 250);
+        }
+        
+        classTab.onclick = function() {
+            activeView = "class";
+            classControls.style.display = "flex";
+            teacherControls.style.display = "none";
+            classTab.classList.add("active");
+            teacherTab.classList.remove("active");
+            renderCurrentView();
+        };
+        
+        teacherTab.onclick = function() {
+            activeView = "teacher";
+            classControls.style.display = "none";
+            teacherControls.style.display = "flex";
+            teacherTab.classList.add("active");
+            classTab.classList.remove("active");
+            renderCurrentView();
+        };
+        
+        classSelect.onchange = renderCurrentView;
+        teacherSelect.onchange = renderCurrentView;
+        
+        editTeacherCheck.onchange = renderCurrentView;
+        editSubjectCheck.onchange = renderCurrentView;
+        editBookCheck.onchange = renderCurrentView;
+        
+        updateBtn.onclick = updateChanges;
+        resetBtn.onclick = resetChanges;
+        
+        document.getElementById("refreshBtn").onclick = refreshWeeklyData;
+        document.getElementById("exportBtn").onclick = exportCurrentView;
+        document.getElementById("printBtn").onclick = printCurrentView;
+        
+        sessionSelect.onchange = async function() {
+            academicSession = this.value;
+            await loadClassesForSession();
+            await refreshWeeklyData();
+        };
+        
+        async function init() {
+            console.log("Initializing...");
+            await loadSessions();
+            await loadClassesForSession();
+            await loadTeachers();
+            await refreshWeeklyData();
+        }
+        
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
