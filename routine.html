@@ -71,6 +71,10 @@
             background: #9b59b6;
             color: #fff;
         }
+        #printWithoutNameBtn {
+    background: #16a085;
+    color: #fff;
+}
         button:hover {
             opacity: 0.9;
         }
@@ -242,7 +246,7 @@
             <select id="sessionSelect"></select>
             
             <span style="flex: 1 1 auto"></span>
-            
+            <button id="printWithoutNameBtn">Print Without Name</button>
             <button id="refreshBtn">Refresh Data</button>
             <button id="exportBtn">Export Excel</button>
             <button id="printBtn">Print</button>
@@ -826,12 +830,37 @@
             printWindow.document.write(printContent);
             printWindow.document.write("</body></html>");
             printWindow.document.close();
+
             
             setTimeout(() => {
                 printWindow.print();
             }, 250);
         }
-        
+
+        function printCurrentViewWithoutName() {
+    let printContent = tableContainer.innerHTML;
+    
+    const printWindow = window.open("", "Print", "height=800,width=1200");
+    printWindow.document.write("<!DOCTYPE html><html><head><meta charset='UTF-8'>");
+    printWindow.document.write("<style>");
+    printWindow.document.write("@media print { body { font-family: Arial, sans-serif; margin: 20px; } }");
+    printWindow.document.write("body { font-family: Arial, sans-serif; margin: 20px; }");
+    printWindow.document.write(".print-header { display: none !important; }");
+    printWindow.document.write("table { width: 100%; border-collapse: collapse; margin-top: 0; }");
+    printWindow.document.write("th, td { border: 1px solid #999; padding: 8px; text-align: center; font-size: 0.85rem; }");
+    printWindow.document.write("th { background: #4caf50; color: white; font-weight: bold; }");
+    printWindow.document.write("td.period { background: #f0f0f0; font-weight: bold; text-align: left; width: 90px; }");
+    printWindow.document.write(".cell-content { display: flex; flex-direction: column; gap: 4px; }");
+    printWindow.document.write("</style>");
+    printWindow.document.write("</head><body>");
+    printWindow.document.write(printContent);
+    printWindow.document.write("</body></html>");
+    printWindow.document.close();
+    
+    setTimeout(() => {
+        printWindow.print();
+    }, 250);
+}
         classTab.onclick = function() {
             activeView = "class";
             classControls.style.display = "flex";
@@ -859,7 +888,7 @@
         
         updateBtn.onclick = updateChanges;
         resetBtn.onclick = resetChanges;
-        
+        document.getElementById("printWithoutNameBtn").onclick = printCurrentViewWithoutName;
         document.getElementById("refreshBtn").onclick = refreshWeeklyData;
         document.getElementById("exportBtn").onclick = exportCurrentView;
         document.getElementById("printBtn").onclick = printCurrentView;
